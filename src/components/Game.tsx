@@ -13,8 +13,8 @@ import { Share } from "./Share";
 import { Guesses } from "./Guesses";
 import { useTranslation } from "react-i18next";
 import { SettingsData } from "../hooks/useSettings";
-import { useMode } from "../hooks/useMode";
 import { useCountry } from "../hooks/useCountry";
+import { CountryOcChart } from "./CountryOcChart";
 
 function getDayString() {
   return DateTime.now().toFormat("yyyy-MM-dd");
@@ -30,20 +30,10 @@ export function Game({ settingsData }: GameProps) {
   const { t, i18n } = useTranslation();
   const dayString = useMemo(getDayString, []);
 
-  const [country, randomAngle, imageScale] = useCountry(dayString);
+  const country = useCountry(dayString);
 
   const [currentGuess, setCurrentGuess] = useState("");
   const [guesses, addGuess] = useGuesses(dayString);
-  const [hideImageMode, setHideImageMode] = useMode(
-    "hideImageMode",
-    dayString,
-    settingsData.noImageMode
-  );
-  const [rotationMode, setRotationMode] = useMode(
-    "rotationMode",
-    dayString,
-    settingsData.rotationMode
-  );
 
   const gameEnded =
     guesses.length === MAX_TRY_COUNT ||
@@ -94,40 +84,9 @@ export function Game({ settingsData }: GameProps) {
 
   return (
     <div className="flex-grow flex flex-col mx-2">
-      {hideImageMode && !gameEnded && (
-        <button
-          className="border-2 uppercase my-2 hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-slate-800 dark:active:bg-slate-700"
-          type="button"
-          onClick={() => setHideImageMode(false)}
-        >
-          {t("showCountry")}
-        </button>
-      )}
       <div className="my-1">
-        <img
-          className={`max-h-52 m-auto transition-transform duration-700 ease-in dark:invert ${
-            hideImageMode && !gameEnded ? "h-0" : "h-full"
-          }`}
-          alt="country to guess"
-          src={`images/countries/${country.code.toLowerCase()}/vector.svg`}
-          style={
-            rotationMode && !gameEnded
-              ? {
-                  transform: `rotate(${randomAngle}deg) scale(${imageScale})`,
-                }
-              : {}
-          }
-        />
+        <CountryOcChart countryCode={country.code} />
       </div>
-      {rotationMode && !hideImageMode && !gameEnded && (
-        <button
-          className="border-2 uppercase mb-2 hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-slate-800 dark:active:bg-slate-700"
-          type="button"
-          onClick={() => setRotationMode(false)}
-        >
-          {t("cancelRotation")}
-        </button>
-      )}
       <Guesses
         rowCount={MAX_TRY_COUNT}
         guesses={guesses}
@@ -140,8 +99,6 @@ export function Game({ settingsData }: GameProps) {
               guesses={guesses}
               dayString={dayString}
               settingsData={settingsData}
-              hideImageMode={hideImageMode}
-              rotationMode={rotationMode}
             />
             <a
               className="underline w-full text-center block mt-4"

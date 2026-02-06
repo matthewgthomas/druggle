@@ -61,9 +61,44 @@ resilience <- c("Political leadership and governance",
 
 # Drop the overall and domain averages
 X <- oc_index %>% select(code, name, latitude, longitude, all_of(c(markets, actors, resilience)))
+indicator_columns <- c(markets, actors, resilience)
 
 # Save
 write_csv(X, "data-prep/oc_index.csv")
+
+# Save indicator values for chart rendering in the web app
+indicator_meta <- tibble(label = indicator_columns) |>
+  mutate(
+    id = label |>
+      str_to_lower() |>
+      str_replace_all("[^a-z0-9]+", "_") |>
+      str_replace_all("^_+|_+$", ""),
+    pillar = case_when(
+      label %in% markets ~ "markets",
+      label %in% actors ~ "actors",
+      TRUE ~ "resilience"
+    )
+  ) |>
+  select(id, label, pillar)
+
+country_values <- X |>
+  select(code, all_of(indicator_columns))
+
+oc_indicators <- list(
+  version = "GOCI_2025_indicators",
+  indicators = pmap(indicator_meta, \(id, label, pillar) {
+    list(id = id, label = label, pillar = pillar)
+  }),
+  countries = country_values |>
+    (\(table) split(table, table$code))() |>
+    map(\(row) unname(as.numeric(row[1, indicator_columns, drop = TRUE])))
+)
+
+write_json(
+  oc_indicators,
+  "src/data/oc_indicators.json",
+  auto_unbox = TRUE
+)
 
 # scale 1–10 -> 0–1
 X01 <- X %>%

@@ -17,17 +17,9 @@ interface ShareProps {
   guesses: Guess[];
   dayString: string;
   settingsData: SettingsData;
-  hideImageMode: boolean;
-  rotationMode: boolean;
 }
 
-export function Share({
-  guesses,
-  dayString,
-  settingsData,
-  hideImageMode,
-  rotationMode,
-}: ShareProps) {
+export function Share({ guesses, dayString, settingsData }: ShareProps) {
   const { t } = useTranslation();
   const { theme } = settingsData;
 
@@ -39,12 +31,7 @@ export function Share({
         "day"
       )
     );
-    const difficultyModifierEmoji = hideImageMode
-      ? " 🙈"
-      : rotationMode
-      ? " 🌀"
-      : "";
-    const title = `#Worldle #${dayCount} ${guessCount}/6${difficultyModifierEmoji}`;
+    const title = `#Worldle #${dayCount} ${guessCount}/6`;
 
     const guessString = guesses
       .map((guess) => {
@@ -54,7 +41,7 @@ export function Share({
       .join("\n");
 
     return [title, guessString, "https://worldle.teuteuf.fr"].join("\n");
-  }, [dayString, guesses, hideImageMode, rotationMode, theme]);
+  }, [dayString, guesses, theme]);
 
   return (
     <CopyToClipboard
