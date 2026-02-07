@@ -23,6 +23,7 @@ const Y_AXIS_WIDTH = 100;
 const Y_AXIS_MAX_CHARS_PER_LINE = 20;
 const SECTION_ROW_HEIGHT = 44;
 const SECTION_MIN_HEIGHT = 210;
+const SECTION_CHART_TOP_MARGIN = 16;
 
 const BAND_COLORS: Record<InfluenceBand, string> = {
   little: "#6c9a82",
@@ -198,7 +199,12 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                     <ComposedChart
                       data={section.rows}
                       layout="vertical"
-                      margin={{ top: 8, right: 16, left: 24, bottom: 8 }}
+                      margin={{
+                        top: SECTION_CHART_TOP_MARGIN,
+                        right: 16,
+                        left: 24,
+                        bottom: 8,
+                      }}
                     >
                       <XAxis type="number" domain={[0, 10]} hide />
                       <YAxis
