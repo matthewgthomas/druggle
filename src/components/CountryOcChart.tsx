@@ -200,11 +200,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                       layout="vertical"
                       margin={{ top: 8, right: 16, left: 24, bottom: 8 }}
                     >
-                      <XAxis
-                        type="number"
-                        domain={[0, 10]}
-                        tick={{ fontSize: 10 }}
-                      />
+                      <XAxis type="number" domain={[0, 10]} hide />
                       <YAxis
                         type="category"
                         dataKey="label"
@@ -255,19 +251,6 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                           />
                         );
                       })}
-                      {section.rows.map((entry) => (
-                        <ReferenceDot
-                          ifOverflow="visible"
-                          key={`midpoint-${section.pillar}-${entry.id}`}
-                          x={MIDPOINT}
-                          y={entry.label}
-                          r={DOT_RADIUS - 1}
-                          fill={BAND_COLORS[entry.influenceBand]}
-                          fillOpacity={0.65}
-                          stroke="#ffffff"
-                          strokeWidth={1}
-                        />
-                      ))}
                       <Tooltip
                         formatter={(value) => {
                           if (typeof value === "number") {
