@@ -22,7 +22,7 @@ const resources = {
         gotIt: "Got it!",
         summary: {
           comparison:
-            "{{country}} is {{similarity}} to today's target across criminal markets, criminal actors and resilience.",
+            "{{country}} is {{similarity}} to today's country across criminal markets, criminal actors and resilience.",
           unavailable:
             "We can't compare criminal markets, criminal actors and resilience for {{country}} because OC indicator data is unavailable.",
         },
