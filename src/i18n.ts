@@ -17,6 +17,38 @@ const resources = {
         distanceUnit: "Unit of distance",
         theme: "Theme",
       },
+      tips: {
+        close: "Close tip",
+        gotIt: "Got it!",
+        summary: {
+          comparison:
+            "{{country}} is {{similarity}} to today's target across criminal markets, criminal actors and resilience.",
+          unavailable:
+            "We can't compare criminal markets, criminal actors and resilience for {{country}} because OC indicator data is unavailable.",
+        },
+        line: {
+          comparison:
+            "{{pillar}}: {{similarity}} ({{guessed}} vs {{target}}). Your guess is {{direction}}.",
+        },
+        pillars: {
+          markets: "Criminal markets",
+          actors: "Criminal actors",
+          resilience: "Resilience",
+        },
+        similarity: {
+          verySimilar: "very similar",
+          somewhatSimilar: "somewhat similar",
+          quiteDifferent: "quite different",
+        },
+        direction: {
+          higher: "higher",
+          lower: "lower",
+          aboutSame: "about the same",
+          moreResilient: "more resilient",
+          lessResilient: "less resilient",
+          similarlyResilient: "similarly resilient",
+        },
+      },
       buyMeACoffee: "Buy me a ☕!",
     },
   },
@@ -33,6 +65,38 @@ const resources = {
         title: "Paramètres",
         distanceUnit: "Unité de distance",
         theme: "Thème",
+      },
+      tips: {
+        close: "Fermer l'astuce",
+        gotIt: "Compris !",
+        summary: {
+          comparison:
+            "{{country}} est {{similarity}} de la cible du jour sur les marchés criminels, les acteurs criminels et la résilience.",
+          unavailable:
+            "Impossible de comparer les marchés criminels, les acteurs criminels et la résilience pour {{country}}, faute de données OC.",
+        },
+        line: {
+          comparison:
+            "{{pillar}} : {{similarity}} ({{guessed}} vs {{target}}). Votre essai est {{direction}}.",
+        },
+        pillars: {
+          markets: "Marchés criminels",
+          actors: "Acteurs criminels",
+          resilience: "Résilience",
+        },
+        similarity: {
+          verySimilar: "très similaire",
+          somewhatSimilar: "assez similaire",
+          quiteDifferent: "assez différent",
+        },
+        direction: {
+          higher: "plus élevé",
+          lower: "plus faible",
+          aboutSame: "presque identique",
+          moreResilient: "plus résilient",
+          lessResilient: "moins résilient",
+          similarlyResilient: "aussi résilient",
+        },
       },
       buyMeACoffee: "Offrez moi un ☕ !",
     },

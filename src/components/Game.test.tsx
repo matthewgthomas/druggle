@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Game } from "./Game";
 import { SettingsData } from "../hooks/useSettings";
 
@@ -40,7 +40,19 @@ jest.mock("../hooks/useUtcDayString", () => ({
 }));
 
 jest.mock("./CountryInput", () => ({
-  CountryInput: () => <input data-testid="country-input" />,
+  CountryInput: ({
+    currentGuess,
+    setCurrentGuess,
+  }: {
+    currentGuess: string;
+    setCurrentGuess: (guess: string) => void;
+  }) => (
+    <input
+      data-testid="country-input"
+      onChange={(event) => setCurrentGuess(event.currentTarget.value)}
+      value={currentGuess}
+    />
+  ),
 }));
 
 jest.mock("./Guesses", () => ({
@@ -53,6 +65,26 @@ jest.mock("./Share", () => ({
   Share: () => <div data-testid="share" />,
 }));
 
+jest.mock("./GuessTip", () => ({
+  GuessTip: ({
+    tipData,
+    onClose,
+  }: {
+    tipData: { guessedCode: string; mode: string };
+    onClose: () => void;
+  }) => (
+    <div
+      data-guessed-code={tipData.guessedCode}
+      data-mode={tipData.mode}
+      data-testid="guess-tip"
+    >
+      <button data-testid="guess-tip-close" onClick={onClose} type="button">
+        close
+      </button>
+    </div>
+  ),
+}));
+
 describe("Game", () => {
   const settingsData: SettingsData = {
     distanceUnit: "km",
@@ -63,6 +95,13 @@ describe("Game", () => {
     localStorage.clear();
     mockUseUtcDayString.mockReturnValue("2026-02-07");
   });
+
+  function submitGuess(guess: string) {
+    fireEvent.change(screen.getByTestId("country-input"), {
+      target: { value: guess },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "🌍 guess" }));
+  }
 
   it("renders the OC chart clue and no longer renders the country image", () => {
     render(<Game settingsData={settingsData} />);
@@ -91,5 +130,49 @@ describe("Game", () => {
 
     expect(screen.getByTestId("guesses")).toHaveTextContent("Peru");
     expect(screen.getByTestId("guesses")).not.toHaveTextContent("Chile");
+  });
+
+  it("shows the tip after an incorrect guess", () => {
+    render(<Game settingsData={settingsData} />);
+
+    submitGuess("Canada");
+
+    expect(screen.getByTestId("guess-tip")).toBeInTheDocument();
+    expect(screen.getByTestId("guess-tip")).toHaveAttribute(
+      "data-guessed-code",
+      "CA"
+    );
+  });
+
+  it("does not show the tip after a correct guess", () => {
+    render(<Game settingsData={settingsData} />);
+
+    submitGuess("United States");
+
+    expect(screen.queryByTestId("guess-tip")).not.toBeInTheDocument();
+  });
+
+  it("can dismiss the tip", () => {
+    render(<Game settingsData={settingsData} />);
+
+    submitGuess("Canada");
+    fireEvent.click(screen.getByTestId("guess-tip-close"));
+
+    expect(screen.queryByTestId("guess-tip")).not.toBeInTheDocument();
+  });
+
+  it("reopens tip with updated content after a new incorrect guess", () => {
+    render(<Game settingsData={settingsData} />);
+
+    submitGuess("Canada");
+    fireEvent.click(screen.getByTestId("guess-tip-close"));
+    expect(screen.queryByTestId("guess-tip")).not.toBeInTheDocument();
+
+    submitGuess("France");
+
+    expect(screen.getByTestId("guess-tip")).toHaveAttribute(
+      "data-guessed-code",
+      "FR"
+    );
   });
 });

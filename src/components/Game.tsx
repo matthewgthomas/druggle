@@ -15,6 +15,8 @@ import { SettingsData } from "../hooks/useSettings";
 import { useCountry } from "../hooks/useCountry";
 import { CountryOcChart } from "./CountryOcChart";
 import { useUtcDayString } from "../hooks/useUtcDayString";
+import { buildOcTipData, OcTipData } from "../domain/ocTip";
+import { GuessTip } from "./GuessTip";
 
 const MAX_TRY_COUNT = 6;
 
@@ -30,6 +32,8 @@ export function Game({ settingsData }: GameProps) {
 
   const [currentGuess, setCurrentGuess] = useState("");
   const [guesses, addGuess] = useGuesses(dayString);
+  const [tipData, setTipData] = useState<OcTipData | null>(null);
+  const [isTipVisible, setIsTipVisible] = useState(false);
 
   const gameEnded =
     guesses.length === MAX_TRY_COUNT ||
@@ -60,8 +64,14 @@ export function Game({ settingsData }: GameProps) {
       setCurrentGuess("");
 
       if (newGuess.distance === 0) {
+        setTipData(null);
+        setIsTipVisible(false);
         toast.success(t("welldone"), { delay: 2000 });
+        return;
       }
+
+      setTipData(buildOcTipData(guessedCountry.code, country.code));
+      setIsTipVisible(true);
     },
     [addGuess, country, currentGuess, i18n.resolvedLanguage, t]
   );
@@ -78,6 +88,11 @@ export function Game({ settingsData }: GameProps) {
     }
   }, [country, guesses, i18n.resolvedLanguage]);
 
+  useEffect(() => {
+    setTipData(null);
+    setIsTipVisible(false);
+  }, [dayString]);
+
   return (
     <div className="flex-grow flex flex-col mx-2">
       <div className="my-1">
@@ -88,6 +103,9 @@ export function Game({ settingsData }: GameProps) {
         guesses={guesses}
         settingsData={settingsData}
       />
+      {isTipVisible && tipData != null ? (
+        <GuessTip tipData={tipData} onClose={() => setIsTipVisible(false)} />
+      ) : null}
       <div className="my-2">
         {gameEnded ? (
           <>
