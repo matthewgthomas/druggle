@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { Game } from "./Game";
 import { SettingsData } from "../hooks/useSettings";
 
+const mockUseUtcDayString = jest.fn();
+
 jest.mock("recharts", () => ({
   ComposedChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
@@ -33,8 +35,8 @@ jest.mock("../hooks/useCountry", () => ({
   }),
 }));
 
-jest.mock("../hooks/useGuesses", () => ({
-  useGuesses: () => [[], jest.fn()],
+jest.mock("../hooks/useUtcDayString", () => ({
+  useUtcDayString: () => mockUseUtcDayString(),
 }));
 
 jest.mock("./CountryInput", () => ({
@@ -42,7 +44,9 @@ jest.mock("./CountryInput", () => ({
 }));
 
 jest.mock("./Guesses", () => ({
-  Guesses: () => <div data-testid="guesses" />,
+  Guesses: ({ guesses }: { guesses: Array<{ name: string }> }) => (
+    <div data-testid="guesses">{guesses.map((guess) => guess.name).join(",")}</div>
+  ),
 }));
 
 jest.mock("./Share", () => ({
@@ -55,6 +59,11 @@ describe("Game", () => {
     theme: "light",
   };
 
+  beforeEach(() => {
+    localStorage.clear();
+    mockUseUtcDayString.mockReturnValue("2026-02-07");
+  });
+
   it("renders the OC chart clue and no longer renders the country image", () => {
     render(<Game settingsData={settingsData} />);
 
@@ -63,5 +72,24 @@ describe("Game", () => {
       "data-series-count",
       "32"
     );
+  });
+
+  it("switches to the new day's guesses when the UTC day string changes", () => {
+    localStorage.setItem(
+      "guesses",
+      JSON.stringify({
+        "2026-02-07": [{ name: "Chile", direction: "N", distance: 10 }],
+        "2026-02-08": [{ name: "Peru", direction: "S", distance: 20 }],
+      })
+    );
+
+    const { rerender } = render(<Game settingsData={settingsData} />);
+    expect(screen.getByTestId("guesses")).toHaveTextContent("Chile");
+
+    mockUseUtcDayString.mockReturnValue("2026-02-08");
+    rerender(<Game settingsData={settingsData} />);
+
+    expect(screen.getByTestId("guesses")).toHaveTextContent("Peru");
+    expect(screen.getByTestId("guesses")).not.toHaveTextContent("Chile");
   });
 });

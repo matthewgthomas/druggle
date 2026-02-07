@@ -86,7 +86,7 @@ export function InfosFr({ isOpen, close, settingsData }: InfosProps) {
         </div>
       </div>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3 font-bold">
-        Un nouveau <Drugle /> sera disponible chaque jour !
+        Un nouveau <Drugle /> sera disponible chaque jour à 00h00 UTC !
       </div>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3">
         <div className="font-bold">A propos de la distance</div>

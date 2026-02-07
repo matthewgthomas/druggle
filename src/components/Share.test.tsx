@@ -28,7 +28,7 @@ describe("Share", () => {
     render(
       <Share
         guesses={[{ direction: "N", distance: 0, name: "France" }]}
-        dayString="2022-01-22"
+        dayString="2026-02-08"
         settingsData={settingsData}
       />
     );
@@ -36,9 +36,8 @@ describe("Share", () => {
     const text =
       screen.getByTestId("copy-wrapper").getAttribute("data-text") ?? "";
 
-    expect(text).toContain("#Worldle #1 1/6");
+    expect(text).toContain("#Drugle #1 1/6");
     expect(text).not.toContain("🙈");
     expect(text).not.toContain("🌀");
   });
 });
-

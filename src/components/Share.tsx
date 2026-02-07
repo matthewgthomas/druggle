@@ -11,7 +11,7 @@ import { Guess } from "../domain/guess";
 import React from "react";
 import { SettingsData } from "../hooks/useSettings";
 
-const START_DATE = DateTime.fromISO("2026-02-07");
+const START_DATE = DateTime.fromISO("2026-02-07", { zone: "utc" });
 
 interface ShareProps {
   guesses: Guess[];
@@ -27,9 +27,10 @@ export function Share({ guesses, dayString, settingsData }: ShareProps) {
     const guessCount =
       guesses[guesses.length - 1]?.distance === 0 ? guesses.length : "X";
     const dayCount = Math.floor(
-      Interval.fromDateTimes(START_DATE, DateTime.fromISO(dayString)).length(
-        "day"
-      )
+      Interval.fromDateTimes(
+        START_DATE,
+        DateTime.fromISO(dayString, { zone: "utc" })
+      ).length("day")
     );
     const title = `#Drugle #${dayCount} ${guessCount}/6`;
 

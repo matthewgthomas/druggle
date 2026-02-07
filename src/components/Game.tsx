@@ -1,5 +1,4 @@
-import { DateTime } from "luxon";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
   countries,
@@ -15,10 +14,7 @@ import { useTranslation } from "react-i18next";
 import { SettingsData } from "../hooks/useSettings";
 import { useCountry } from "../hooks/useCountry";
 import { CountryOcChart } from "./CountryOcChart";
-
-function getDayString() {
-  return DateTime.now().toFormat("yyyy-MM-dd");
-}
+import { useUtcDayString } from "../hooks/useUtcDayString";
 
 const MAX_TRY_COUNT = 6;
 
@@ -28,7 +24,7 @@ interface GameProps {
 
 export function Game({ settingsData }: GameProps) {
   const { t, i18n } = useTranslation();
-  const dayString = useMemo(getDayString, []);
+  const dayString = useUtcDayString();
 
   const country = useCountry(dayString);
 
