@@ -10,7 +10,7 @@ import { useSettings } from "./hooks/useSettings";
 import { Drugle } from "./components/Drugle";
 
 function App() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const [infoOpen, setInfoOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
