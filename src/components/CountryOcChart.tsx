@@ -1,9 +1,9 @@
 import React from "react";
 import {
   ComposedChart,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
-  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -34,14 +34,6 @@ const STATUS_LABELS: Record<MidpointStatus, string> = {
 
 const STATUS_ORDER: MidpointStatus[] = ["above", "below", "equal"];
 
-interface ScatterShapeProps {
-  cx?: number;
-  cy?: number;
-  payload?: {
-    midpointStatus?: MidpointStatus;
-  };
-}
-
 function getMidpointStatus(value: number): MidpointStatus {
   if (value > MIDPOINT) {
     return "above";
@@ -54,34 +46,10 @@ function getMidpointStatus(value: number): MidpointStatus {
   return "equal";
 }
 
-function renderScatterDot(props: unknown) {
-  const { cx, cy, payload } = props as ScatterShapeProps;
-
-  if (cx == null || cy == null || payload == null) {
-    return <></>;
-  }
-
-  const midpointStatus = payload.midpointStatus ?? "equal";
-
-  return (
-    <circle
-      cx={cx}
-      cy={cy}
-      fill={STATUS_COLORS[midpointStatus]}
-      r={DOT_RADIUS}
-    />
-  );
-}
-
 export function CountryOcChart({ countryCode }: CountryOcChartProps) {
   const series = getCountryOcSeries(countryCode).map((entry) => ({
     ...entry,
     midpointStatus: getMidpointStatus(entry.value),
-  }));
-  const scatterPoints = series.map((entry) => ({
-    ...entry,
-    x: entry.value,
-    y: entry.label,
   }));
 
   if (series.length === 0) {
@@ -149,6 +117,43 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                   strokeWidth={STEM_WIDTH}
                 />
               ))}
+              {series.map((entry) => {
+                const labelPosition: "left" | "right" =
+                  entry.value < MIDPOINT ? "left" : "right";
+
+                return (
+                  <ReferenceDot
+                    ifOverflow="visible"
+                    key={`endpoint-${entry.id}`}
+                    x={entry.value}
+                    y={entry.label}
+                    r={DOT_RADIUS}
+                    fill={STATUS_COLORS[entry.midpointStatus]}
+                    stroke="#ffffff"
+                    strokeWidth={1}
+                    label={{
+                      value: entry.value.toFixed(1),
+                      position: labelPosition,
+                      fill: STATUS_COLORS[entry.midpointStatus],
+                      fontSize: 10,
+                      fontWeight: 600,
+                    }}
+                  />
+                );
+              })}
+              {series.map((entry) => (
+                <ReferenceDot
+                  ifOverflow="visible"
+                  key={`midpoint-${entry.id}`}
+                  x={MIDPOINT}
+                  y={entry.label}
+                  r={DOT_RADIUS - 1}
+                  fill={STATUS_COLORS[entry.midpointStatus]}
+                  fillOpacity={0.65}
+                  stroke="#ffffff"
+                  strokeWidth={1}
+                />
+              ))}
               <Tooltip
                 formatter={(value) => {
                   if (typeof value === "number") {
@@ -164,11 +169,6 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                     ? parsedValue.toFixed(1)
                     : String(value);
                 }}
-              />
-              <Scatter
-                data={scatterPoints}
-                isAnimationActive={false}
-                shape={renderScatterDot}
               />
             </ComposedChart>
           </ResponsiveContainer>

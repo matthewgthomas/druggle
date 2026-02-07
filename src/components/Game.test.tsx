@@ -7,14 +7,9 @@ jest.mock("recharts", () => ({
   ComposedChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
-  Cell: ({ className }: { className?: string }) => (
-    <div className={className} />
-  ),
+  ReferenceDot: () => null,
   ReferenceLine: () => null,
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  Scatter: ({ children }: { children?: React.ReactNode }) => (
     <div>{children}</div>
   ),
   Tooltip: () => null,
