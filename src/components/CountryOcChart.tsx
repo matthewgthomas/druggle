@@ -19,6 +19,10 @@ type InfluenceBand = "little" | "moderate" | "significant" | "severe";
 const MIDPOINT = 5.5;
 const STEM_WIDTH = 4;
 const DOT_RADIUS = 4.5;
+const Y_AXIS_WIDTH = 100;
+const Y_AXIS_MAX_CHARS_PER_LINE = 20;
+const SECTION_ROW_HEIGHT = 44;
+const SECTION_MIN_HEIGHT = 210;
 
 const BAND_COLORS: Record<InfluenceBand, string> = {
   little: "#6c9a82",
@@ -28,7 +32,7 @@ const BAND_COLORS: Record<InfluenceBand, string> = {
 };
 
 const BAND_LABELS: Record<InfluenceBand, string> = {
-  little: "Non-existent to little influence",
+  little: "Non-existent or little influence",
   moderate: "Moderate influence",
   significant: "Significant influence",
   severe: "Severe influence",
@@ -49,6 +53,14 @@ const SECTION_LABELS: Record<OcPillar, string> = {
   resilience: "Resilience",
 };
 
+interface YAxisTickProps {
+  x?: number;
+  y?: number;
+  payload?: {
+    value?: number | string;
+  };
+}
+
 function getInfluenceBand(value: number): InfluenceBand {
   if (value < 4) {
     return "little";
@@ -63,6 +75,70 @@ function getInfluenceBand(value: number): InfluenceBand {
   }
 
   return "severe";
+}
+
+function truncateWithEllipsis(text: string, maxCharsPerLine: number): string {
+  if (text.length <= maxCharsPerLine) {
+    return text;
+  }
+
+  if (maxCharsPerLine <= 3) {
+    return ".".repeat(Math.max(1, maxCharsPerLine));
+  }
+
+  return `${text.slice(0, maxCharsPerLine - 3).trimEnd()}...`;
+}
+
+function wrapLabelToTwoLines(
+  text: string,
+  maxCharsPerLine: number
+): [string, string?] {
+  const normalized = text.trim().replace(/\s+/g, " ");
+
+  if (normalized.length <= maxCharsPerLine) {
+    return [normalized];
+  }
+
+  const candidate = normalized.slice(0, maxCharsPerLine + 1);
+  const lastSpaceIndex = candidate.lastIndexOf(" ");
+  const splitIndex = lastSpaceIndex > 0 ? lastSpaceIndex : maxCharsPerLine;
+
+  const firstLine = normalized.slice(0, splitIndex).trimEnd();
+  const remaining = normalized.slice(splitIndex).trimStart();
+
+  return [firstLine, truncateWithEllipsis(remaining, maxCharsPerLine)];
+}
+
+function renderYAxisTick(props: unknown) {
+  const { x, y, payload } = props as YAxisTickProps;
+
+  if (x == null || y == null || payload == null) {
+    return <></>;
+  }
+
+  const [firstLine, secondLine] = wrapLabelToTwoLines(
+    String(payload.value ?? ""),
+    Y_AXIS_MAX_CHARS_PER_LINE
+  );
+
+  if (secondLine == null) {
+    return (
+      <text x={x} y={y} dy={3} fill="#5f5f5f" fontSize={10} textAnchor="end">
+        {firstLine}
+      </text>
+    );
+  }
+
+  return (
+    <text x={x} y={y} fill="#5f5f5f" fontSize={10} textAnchor="end">
+      <tspan x={x} dy={-5}>
+        {firstLine}
+      </tspan>
+      <tspan x={x} dy={11}>
+        {secondLine}
+      </tspan>
+    </text>
+  );
 }
 
 export function CountryOcChart({ countryCode }: CountryOcChartProps) {
@@ -103,7 +179,10 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
       <div className="max-h-52 overflow-y-auto" data-testid="oc-chart-scroll">
         <div data-series-count={series.length} data-testid="oc-chart">
           {sections.map((section, index) => {
-            const sectionChartHeight = Math.max(170, section.rows.length * 28);
+            const sectionChartHeight = Math.max(
+              SECTION_MIN_HEIGHT,
+              section.rows.length * SECTION_ROW_HEIGHT
+            );
             const sectionClassName =
               index === sections.length - 1
                 ? ""
@@ -129,8 +208,8 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                       <YAxis
                         type="category"
                         dataKey="label"
-                        width={130}
-                        tick={{ fontSize: 10 }}
+                        width={Y_AXIS_WIDTH}
+                        tick={renderYAxisTick}
                         tickMargin={6}
                         interval={0}
                       />
