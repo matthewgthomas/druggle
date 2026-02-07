@@ -1,7 +1,7 @@
 import { Guesses } from "../Guesses";
 import { Panel } from "./Panel";
 import React from "react";
-import { Worldle } from "../Worldle";
+import { Drugle } from "../Drugle";
 import { formatDistance } from "../../domain/geography";
 import { SettingsData } from "../../hooks/useSettings";
 
@@ -16,12 +16,13 @@ export function Infos({ isOpen, close, settingsData }: InfosProps) {
     <Panel title="How to play" isOpen={isOpen} close={close}>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3">
         <div>
-          Guess the <Worldle /> in 6 guesses.
+          Guess the the country based on its organised crime indicators in six
+          guesses.
         </div>
-        <div>Each guess must be a valid country, territory, ...</div>
+        <div>Each guess must be a valid country or territory.</div>
         <div>
           After each guess, you will have the distance, the direction and the
-          proximity from your guess and the target country.
+          proximity from your guess to the target location.
         </div>
       </div>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3">
@@ -84,7 +85,7 @@ export function Infos({ isOpen, close, settingsData }: InfosProps) {
         </div>
       </div>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3 font-bold">
-        A new <Worldle /> will be available every day!
+        A new <Drugle /> will be available every day!
       </div>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3">
         <div className="font-bold">About distance</div>
@@ -99,30 +100,34 @@ export function Infos({ isOpen, close, settingsData }: InfosProps) {
         </div>
       </div>
       <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3">
-        <Worldle /> has been <span className="font-bold">heavily</span> inspired
-        by{" "}
-        <a
-          className="underline"
-          href="https://www.powerlanguage.co.uk/wordle/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Wordle
-        </a>{" "}
-        created by{" "}
-        <a
-          className="underline"
-          href="https://twitter.com/powerlanguish"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Josh Wardle (@powerlanguish)
-        </a>
-        .
-      </div>
-      <div className="space-y-3 text-justify pb-3">
+        <div className="font-bold">About the organised crime indicators</div>
         <div>
-          Made by{" "}
+          The organised crime indicators are based on the{" "}
+          <a
+            className="underline"
+            href="https://ocindex.net"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Global Organized Crime Index
+          </a>{" "}
+          developed by the Global Initiative Against Transnational Organized
+          Crime (GI-TOC).
+        </div>
+      </div>
+      <div className="space-y-3 text-justify border-b-2 border-gray-200 pb-3 mb-3">
+        <div className="font-bold">Credits</div>
+        <div>
+          <Drugle /> is based on{" "}
+          <a
+            className="underline"
+            href="https://worldle.teuteuf.fr/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Worldle
+          </a>{" "}
+          created by{" "}
           <a
             className="underline"
             href="https://twitter.com/teuteuf"
@@ -131,17 +136,39 @@ export function Infos({ isOpen, close, settingsData }: InfosProps) {
           >
             @teuteuf
           </a>
-        </div>
-        <div>
-          Want to support?{" "}
+          , which was in turn inspired by{" "}
           <a
             className="underline"
-            href="https://www.ko-fi.com/teuteuf"
+            href="https://www.powerlanguage.co.uk/wordle/"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Buy me a coffee! ☕
+            Wordle
+          </a>{" "}
+          created by{" "}
+          <a
+            className="underline"
+            href="https://twitter.com/powerlanguish"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Josh Wardle (@powerlanguish)
           </a>
+          .
+        </div>
+        <div>Idea by Georgia Mealings.</div>
+        <div>Name by Matt Corby.</div>
+        <div>
+          Developed by{" "}
+          <a
+            className="underline"
+            href="https://matthewgthomas.co.uk"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Matthew Gwynfryn Thomas
+          </a>
+          .
         </div>
       </div>
     </Panel>

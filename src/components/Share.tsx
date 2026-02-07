@@ -11,7 +11,7 @@ import { Guess } from "../domain/guess";
 import React from "react";
 import { SettingsData } from "../hooks/useSettings";
 
-const START_DATE = DateTime.fromISO("2022-01-21");
+const START_DATE = DateTime.fromISO("2026-02-07");
 
 interface ShareProps {
   guesses: Guess[];
@@ -31,7 +31,7 @@ export function Share({ guesses, dayString, settingsData }: ShareProps) {
         "day"
       )
     );
-    const title = `#Worldle #${dayCount} ${guessCount}/6`;
+    const title = `#Drugle #${dayCount} ${guessCount}/6`;
 
     const guessString = guesses
       .map((guess) => {
@@ -40,7 +40,9 @@ export function Share({ guesses, dayString, settingsData }: ShareProps) {
       })
       .join("\n");
 
-    return [title, guessString, "https://worldle.teuteuf.fr"].join("\n");
+    return [title, guessString, "https://matthewgthomas.co.uk/drugle"].join(
+      "\n"
+    );
   }, [dayString, guesses, theme]);
 
   return (

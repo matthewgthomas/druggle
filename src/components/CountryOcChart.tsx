@@ -26,10 +26,10 @@ const SECTION_MIN_HEIGHT = 210;
 const SECTION_CHART_TOP_MARGIN = 16;
 
 const BAND_COLORS: Record<InfluenceBand, string> = {
-  little: "#6c9a82",
-  moderate: "#ddc099",
-  significant: "#d8a15d",
-  severe: "#a8334d",
+  little: "#008837",
+  moderate: "#a6dba0",
+  significant: "#c2a5cf",
+  severe: "#7b3294",
 };
 
 const BAND_LABELS: Record<InfluenceBand, string> = {
@@ -156,7 +156,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
   if (series.length === 0) {
     return (
       <div className="my-1 border border-gray-200 rounded p-3 text-sm text-center">
-        No organized crime data available for this country.
+        No organised crime data available for this country.
       </div>
     );
   }
@@ -164,7 +164,15 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
   return (
     <div className="my-1 border border-gray-200 rounded p-2">
       <div className="text-xs font-semibold uppercase mb-2">
-        Organized Crime Indicators (1-10)
+        Organised Crime Indicators
+      </div>
+      <div className="text-xs mb-2">
+        This chart shows the{" "}
+        <a href="https://ocindex.net" target="_blank" rel="noopener noreferrer">
+          influence of organised crime
+        </a>{" "}
+        in a randomly chosen country. Scroll/swipe down to explore the different
+        crime indicators then make a guess.
       </div>
       <div className="flex flex-wrap gap-3 text-xs mb-2">
         {BAND_ORDER.map((band) => (
