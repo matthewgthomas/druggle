@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import seedrandom from "seedrandom";
-import { countries, Country } from "../domain/countries";
-import { ocCountryCodes } from "../domain/ocIndicators";
+import { Country } from "../domain/countries";
+import { countriesWithOcData } from "../domain/playableCountries";
 
 const forcedCountries: Record<string, string> = {
   "2022-02-02": "TD",
@@ -10,10 +10,6 @@ const forcedCountries: Record<string, string> = {
 
 export function useCountry(dayString: string): Country {
   return useMemo(() => {
-    const countriesWithOcData = countries.filter((country) =>
-      ocCountryCodes.has(country.code)
-    );
-
     const forcedCountryCode = forcedCountries[dayString];
     const forcedCountry =
       forcedCountryCode != null

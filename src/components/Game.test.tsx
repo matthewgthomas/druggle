@@ -144,6 +144,15 @@ describe("Game", () => {
     );
   });
 
+  it("rejects countries without OC data", () => {
+    render(<Game settingsData={settingsData} />);
+
+    submitGuess("Antarctica");
+
+    expect(screen.getByTestId("guesses")).toHaveTextContent("");
+    expect(screen.queryByTestId("guess-tip")).not.toBeInTheDocument();
+  });
+
   it("does not show the tip after a correct guess", () => {
     render(<Game settingsData={settingsData} />);
 

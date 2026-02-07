@@ -2,11 +2,8 @@ import { t } from "i18next";
 import React, { useState } from "react";
 import Autosuggest from "react-autosuggest";
 import { useTranslation } from "react-i18next";
-import {
-  countries,
-  getCountryName,
-  sanitizeCountryName,
-} from "../domain/countries";
+import { sanitizeCountryName } from "../domain/countries";
+import { getCountryNamesWithOcData } from "../domain/playableCountries";
 
 interface CountryInputProps {
   currentGuess: string;
@@ -26,13 +23,12 @@ export function CountryInput({
       suggestions={suggestions}
       onSuggestionsFetchRequested={({ value }) =>
         setSuggestions(
-          countries
-            .map((c) => getCountryName(i18n.resolvedLanguage, c).toUpperCase())
-            .filter((countryName) =>
+          getCountryNamesWithOcData(i18n.resolvedLanguage).filter(
+            (countryName) =>
               sanitizeCountryName(countryName).includes(
                 sanitizeCountryName(value)
               )
-            )
+          )
         )
       }
       onSuggestionsClearRequested={() => setSuggestions([])}

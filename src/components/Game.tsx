@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import {
-  countries,
-  getCountryName,
-  sanitizeCountryName,
-} from "../domain/countries";
+import { getCountryName } from "../domain/countries";
 import { useGuesses } from "../hooks/useGuesses";
 import { CountryInput } from "./CountryInput";
 import * as geolib from "geolib";
@@ -17,6 +13,7 @@ import { CountryOcChart } from "./CountryOcChart";
 import { useUtcDayString } from "../hooks/useUtcDayString";
 import { buildOcTipData, OcTipData } from "../domain/ocTip";
 import { GuessTip } from "./GuessTip";
+import { findCountryWithOcDataByName } from "../domain/playableCountries";
 
 const MAX_TRY_COUNT = 6;
 
@@ -42,11 +39,9 @@ export function Game({ settingsData }: GameProps) {
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const guessedCountry = countries.find(
-        (country) =>
-          sanitizeCountryName(
-            getCountryName(i18n.resolvedLanguage, country)
-          ) === sanitizeCountryName(currentGuess)
+      const guessedCountry = findCountryWithOcDataByName(
+        i18n.resolvedLanguage,
+        currentGuess
       );
 
       if (guessedCountry == null) {
