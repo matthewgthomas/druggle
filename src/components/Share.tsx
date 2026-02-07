@@ -40,7 +40,7 @@ export function Share({ guesses, dayString, settingsData }: ShareProps) {
       })
       .join("\n");
 
-    return [title, guessString, "https://matthewgthomas.co.uk/drugle"].join(
+    return [title, guessString, "https://matthewgthomas.co.uk/drugle/"].join(
       "\n"
     );
   }, [dayString, guesses, theme]);

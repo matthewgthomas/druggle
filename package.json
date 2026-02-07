@@ -1,7 +1,8 @@
 {
-  "name": "worldle",
-  "version": "0.1.0",
+  "name": "drugle",
+  "version": "1.0.0",
   "private": true,
+  "homepage": "https://matthewgthomas.co.uk/drugle",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
