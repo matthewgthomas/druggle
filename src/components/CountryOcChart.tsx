@@ -1,36 +1,88 @@
 import React from "react";
 import {
-  Bar,
-  BarChart,
-  Cell,
-  LabelList,
+  ComposedChart,
+  ReferenceLine,
   ResponsiveContainer,
+  Scatter,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { getCountryOcSeries, OcPillar } from "../domain/ocIndicators";
+import { getCountryOcSeries } from "../domain/ocIndicators";
 
 interface CountryOcChartProps {
   countryCode: string;
 }
 
-const PILLAR_COLORS: Record<OcPillar, string> = {
-  markets: "#dc2626",
-  actors: "#d97706",
-  resilience: "#16a34a",
+type MidpointStatus = "above" | "below" | "equal";
+
+const MIDPOINT = 5.5;
+const STEM_WIDTH = 4;
+const DOT_RADIUS = 4.5;
+
+const STATUS_COLORS: Record<MidpointStatus, string> = {
+  above: "#dc2626",
+  below: "#16a34a",
+  equal: "#6b7280",
 };
 
-const PILLAR_LABELS: Record<OcPillar, string> = {
-  markets: "Markets",
-  actors: "Actors",
-  resilience: "Resilience",
+const STATUS_LABELS: Record<MidpointStatus, string> = {
+  above: "Above midpoint",
+  below: "Below midpoint",
+  equal: "At midpoint (5.5)",
 };
 
-const PILLAR_ORDER: OcPillar[] = ["markets", "actors", "resilience"];
+const STATUS_ORDER: MidpointStatus[] = ["above", "below", "equal"];
+
+interface ScatterShapeProps {
+  cx?: number;
+  cy?: number;
+  payload?: {
+    midpointStatus?: MidpointStatus;
+  };
+}
+
+function getMidpointStatus(value: number): MidpointStatus {
+  if (value > MIDPOINT) {
+    return "above";
+  }
+
+  if (value < MIDPOINT) {
+    return "below";
+  }
+
+  return "equal";
+}
+
+function renderScatterDot(props: unknown) {
+  const { cx, cy, payload } = props as ScatterShapeProps;
+
+  if (cx == null || cy == null || payload == null) {
+    return <></>;
+  }
+
+  const midpointStatus = payload.midpointStatus ?? "equal";
+
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      fill={STATUS_COLORS[midpointStatus]}
+      r={DOT_RADIUS}
+    />
+  );
+}
 
 export function CountryOcChart({ countryCode }: CountryOcChartProps) {
-  const series = getCountryOcSeries(countryCode);
+  const series = getCountryOcSeries(countryCode).map((entry) => ({
+    ...entry,
+    midpointStatus: getMidpointStatus(entry.value),
+  }));
+  const scatterPoints = series.map((entry) => ({
+    ...entry,
+    x: entry.value,
+    y: entry.label,
+  }));
 
   if (series.length === 0) {
     return (
@@ -40,7 +92,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
     );
   }
 
-  const chartHeight = Math.max(420, series.length * 24);
+  const chartHeight = Math.max(460, series.length * 28);
 
   return (
     <div className="my-1 border border-gray-200 rounded p-2">
@@ -48,57 +100,77 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
         Organized Crime Indicators (1-10)
       </div>
       <div className="flex flex-wrap gap-3 text-xs mb-2">
-        {PILLAR_ORDER.map((pillar) => (
-          <span className="inline-flex items-center gap-1" key={pillar}>
+        {STATUS_ORDER.map((status) => (
+          <span className="inline-flex items-center gap-1" key={status}>
             <span
-              className="w-3 h-3 rounded-sm"
-              style={{ backgroundColor: PILLAR_COLORS[pillar] }}
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: STATUS_COLORS[status] }}
             />
-            {PILLAR_LABELS[pillar]}
+            {STATUS_LABELS[status]}
           </span>
         ))}
       </div>
-      <div
-        className="max-h-52 overflow-y-auto pr-1"
-        data-testid="oc-chart-scroll"
-      >
+      <div className="max-h-52 overflow-y-auto" data-testid="oc-chart-scroll">
         <div
           data-series-count={series.length}
           data-testid="oc-chart"
           style={{ height: chartHeight }}
         >
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <ComposedChart
               data={series}
               layout="vertical"
-              margin={{ top: 8, right: 40, left: 170, bottom: 8 }}
+              margin={{ top: 8, right: 16, left: 24, bottom: 8 }}
             >
               <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 10 }} />
               <YAxis
                 type="category"
                 dataKey="label"
-                width={160}
+                width={130}
                 tick={{ fontSize: 10 }}
+                tickMargin={6}
                 interval={0}
               />
-              <Tooltip formatter={(value) => Number(value).toFixed(1)} />
-              <Bar dataKey="value" isAnimationActive={false}>
-                <LabelList
-                  dataKey="value"
-                  position="right"
-                  formatter={(value: number | string) =>
-                    Number(value).toFixed(1)
-                  }
+              <ReferenceLine
+                x={MIDPOINT}
+                stroke="#6b7280"
+                strokeDasharray="4 3"
+                strokeWidth={2}
+              />
+              {series.map((entry) => (
+                <ReferenceLine
+                  ifOverflow="hidden"
+                  key={`stem-${entry.id}`}
+                  segment={[
+                    { x: MIDPOINT, y: entry.label },
+                    { x: entry.value, y: entry.label },
+                  ]}
+                  stroke={STATUS_COLORS[entry.midpointStatus]}
+                  strokeWidth={STEM_WIDTH}
                 />
-                {series.map((entry) => (
-                  <Cell
-                    className="oc-bar-cell"
-                    fill={PILLAR_COLORS[entry.pillar]}
-                    key={entry.id}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
+              ))}
+              <Tooltip
+                formatter={(value) => {
+                  if (typeof value === "number") {
+                    return value.toFixed(1);
+                  }
+
+                  if (Array.isArray(value) && typeof value[0] === "number") {
+                    return value[0].toFixed(1);
+                  }
+
+                  const parsedValue = Number(value);
+                  return Number.isFinite(parsedValue)
+                    ? parsedValue.toFixed(1)
+                    : String(value);
+                }}
+              />
+              <Scatter
+                data={scatterPoints}
+                isAnimationActive={false}
+                shape={renderScatterDot}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>

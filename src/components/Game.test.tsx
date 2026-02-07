@@ -4,13 +4,17 @@ import { Game } from "./Game";
 import { SettingsData } from "../hooks/useSettings";
 
 jest.mock("recharts", () => ({
-  BarChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Bar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ComposedChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Cell: ({ className }: { className?: string }) => (
     <div className={className} />
   ),
-  LabelList: () => null,
+  ReferenceLine: () => null,
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  Scatter: ({ children }: { children?: React.ReactNode }) => (
     <div>{children}</div>
   ),
   Tooltip: () => null,
