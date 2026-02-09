@@ -185,7 +185,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
           </span>
         ))}
       </div>
-      <div className="max-h-52 overflow-y-auto" data-testid="oc-chart-scroll">
+      <div className="max-h-72 overflow-y-auto" data-testid="oc-chart-scroll">
         <div data-series-count={series.length} data-testid="oc-chart">
           {sections.map((section, index) => {
             const sectionChartHeight = Math.max(
