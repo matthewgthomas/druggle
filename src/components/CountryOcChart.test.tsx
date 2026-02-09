@@ -3,9 +3,16 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { CountryOcChart } from "./CountryOcChart";
 
 jest.mock("recharts", () => ({
+  Bar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CartesianGrid: () => null,
+  Cell: () => null,
   ComposedChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
+  LabelList: () => null,
   ReferenceDot: () => null,
   ReferenceLine: () => null,
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
@@ -17,12 +24,16 @@ jest.mock("recharts", () => ({
 }));
 
 describe("CountryOcChart", () => {
-  it("renders all pillar buttons and defaults to criminal markets", () => {
+  it("defaults to overview and renders all chart tabs", () => {
     render(<CountryOcChart countryCode="US" />);
 
+    expect(screen.getByRole("button", { name: "Overview" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
     expect(
       screen.getByRole("button", { name: "Criminal markets" })
-    ).toHaveAttribute("aria-pressed", "true");
+    ).toHaveAttribute("aria-pressed", "false");
     expect(
       screen.getByRole("button", { name: "Criminal actors" })
     ).toHaveAttribute("aria-pressed", "false");
@@ -30,18 +41,39 @@ describe("CountryOcChart", () => {
       screen.getByRole("button", { name: "Resilience" })
     ).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByTestId("oc-chart")).toHaveAttribute(
+      "data-chart-view",
+      "overview"
+    );
+    expect(screen.getByTestId("oc-chart")).toHaveAttribute(
       "data-series-count",
-      "15"
+      "3"
     );
   });
 
-  it("switches chart data when selecting each pillar", () => {
+  it("switches chart data when selecting each detailed pillar", () => {
     render(<CountryOcChart countryCode="US" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Criminal markets" }));
+    expect(
+      screen.getByRole("button", { name: "Criminal markets" })
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("oc-chart")).toHaveAttribute(
+      "data-chart-view",
+      "markets"
+    );
+    expect(screen.getByTestId("oc-chart")).toHaveAttribute(
+      "data-series-count",
+      "15"
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Criminal actors" }));
     expect(
       screen.getByRole("button", { name: "Criminal actors" })
     ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("oc-chart")).toHaveAttribute(
+      "data-chart-view",
+      "actors"
+    );
     expect(screen.getByTestId("oc-chart")).toHaveAttribute(
       "data-series-count",
       "5"
@@ -53,9 +85,20 @@ describe("CountryOcChart", () => {
       "true"
     );
     expect(screen.getByTestId("oc-chart")).toHaveAttribute(
+      "data-chart-view",
+      "resilience"
+    );
+    expect(screen.getByTestId("oc-chart")).toHaveAttribute(
       "data-series-count",
       "12"
     );
+  });
+
+  it("shows semantic guidance in the overview legend", () => {
+    render(<CountryOcChart countryCode="US" />);
+
+    expect(screen.getByText(/Higher is worse/)).toBeInTheDocument();
+    expect(screen.getByText(/Higher is better/)).toBeInTheDocument();
   });
 
   it("shows resilience-specific legend labels and reversed colors", () => {
