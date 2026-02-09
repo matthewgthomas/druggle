@@ -177,30 +177,45 @@ function getRailPositionPercent(value: number): string {
   return `${(clampScore(value) / 10) * 100}%`;
 }
 
+function getClampedRailAnnotationPercent(value: number): string {
+  const railPercent = (clampScore(value) / 10) * 100;
+  return `${Math.max(10, Math.min(90, railPercent))}%`;
+}
+
 function normalizeDelta(delta: number): number {
   const rounded = Math.round(delta * 10) / 10;
   return Object.is(rounded, -0) ? 0 : rounded;
 }
 
-function getDeltaArrow(delta: number): string {
-  const normalizedDelta = normalizeDelta(delta);
-
-  if (normalizedDelta > 0) {
-    return "↑";
+function getNarrativeIntensity(absDelta: number): string {
+  if (absDelta <= 0.15) {
+    return "about the same";
   }
 
-  if (normalizedDelta < 0) {
-    return "↓";
+  if (absDelta <= 0.75) {
+    return "slightly";
   }
 
-  return "→";
+  if (absDelta <= 1.5) {
+    return "moderately";
+  }
+
+  return "significantly";
 }
 
-function formatSignedDelta(delta: number): string {
-  const normalizedDelta = normalizeDelta(delta);
-  const sign = normalizedDelta >= 0 ? "+" : "";
+function buildNarrative(row: OverviewRow): string {
+  const metric =
+    row.direction === "higher-worse" ? "criminality" : "resilience";
+  const average = row.globalAverage.toFixed(1);
+  const normalizedDelta = normalizeDelta(row.delta);
+  const intensity = getNarrativeIntensity(Math.abs(normalizedDelta));
 
-  return `${sign}${normalizedDelta.toFixed(1)}`;
+  if (intensity === "about the same") {
+    return `about the same ${metric} as the global average of ${average}`;
+  }
+
+  const relation = normalizedDelta < 0 ? "less" : "more";
+  return `${intensity} ${relation} ${metric} than the global average of ${average}`;
 }
 
 function formatScoreValue(value: unknown): string {
@@ -340,22 +355,12 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
   }
 
   const renderOverviewRow = (row: OverviewRow) => {
-    const normalizedDelta = normalizeDelta(row.delta);
-    const isAboveAverage = normalizedDelta > 0;
-    const isBelowAverage = normalizedDelta < 0;
-    let deltaBadgeClass = "border-gray-200 bg-gray-50 text-gray-700";
-
-    if (row.direction === "higher-worse") {
-      if (isAboveAverage) {
-        deltaBadgeClass = "border-rose-200 bg-rose-50 text-rose-800";
-      } else if (isBelowAverage) {
-        deltaBadgeClass = "border-emerald-200 bg-emerald-50 text-emerald-800";
-      }
-    } else if (isAboveAverage) {
-      deltaBadgeClass = "border-emerald-200 bg-emerald-50 text-emerald-800";
-    } else if (isBelowAverage) {
-      deltaBadgeClass = "border-rose-200 bg-rose-50 text-rose-800";
-    }
+    const lessLabel =
+      row.direction === "higher-worse" ? "Less criminality" : "Less resilience";
+    const moreLabel =
+      row.direction === "higher-worse" ? "More criminality" : "More resilience";
+    const narrative = buildNarrative(row);
+    const narrativeScore = row.value.toFixed(1);
 
     return (
       <div
@@ -363,45 +368,49 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
         data-testid={`oc-overview-row-${row.pillar}`}
         key={row.pillar}
       >
-        <div className="mb-1 flex items-center justify-between gap-2 text-[11px]">
-          <span className="font-semibold text-gray-700 dark:text-slate-200">
-            {row.label}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="font-semibold text-gray-700 dark:text-slate-100">
-              {row.value.toFixed(1)}
-            </span>
-            <span
-              className={`rounded border px-1 py-[1px] text-[10px] font-semibold ${deltaBadgeClass} dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100`}
-              data-testid={`oc-overview-delta-${row.pillar}`}
-            >
-              {getDeltaArrow(row.delta)} {formatSignedDelta(row.delta)}
-            </span>
-          </span>
+        <div className="mb-1 text-[11px] font-semibold text-gray-700 dark:text-slate-200">
+          {row.label}
         </div>
-        <div className="relative h-5">
-          <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-gray-300 dark:bg-slate-600" />
-          <div
-            className="absolute top-1/2 h-4 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded bg-slate-500 dark:bg-slate-300"
-            data-testid={`oc-overview-global-marker-${row.pillar}`}
-            style={{ left: getRailPositionPercent(row.globalAverage) }}
-          />
-          <div
-            className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow-sm"
-            data-testid={`oc-overview-dot-${row.pillar}`}
-            style={{
-              backgroundColor: getOverviewBarColor(row.pillar, row.value),
-              left: getRailPositionPercent(row.value),
-            }}
-          />
+        <div
+          className="mb-2 text-[11px] text-gray-600 dark:text-slate-300"
+          data-testid={`oc-overview-narrative-${row.pillar}`}
+        >
+          <span className="font-bold text-gray-800 dark:text-slate-100">
+            {narrativeScore}
+          </span>{" "}
+          · {narrative}
         </div>
-        <div className="mt-1 flex justify-between text-[10px] text-gray-500 dark:text-slate-400">
-          <span>0</span>
-          <span>5</span>
-          <span>10</span>
-        </div>
-        <div className="mt-1 text-[10px] text-gray-500 dark:text-slate-400">
-          Global avg: {row.globalAverage.toFixed(1)}
+        <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-slate-400">
+          <span className="w-[72px] text-left">{lessLabel}</span>
+          <div className="min-w-0 flex-1">
+            <div className="relative h-5">
+              <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-gray-300 dark:bg-slate-600" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-500 dark:text-slate-400">
+                0
+              </div>
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-500 dark:text-slate-400">
+                10
+              </div>
+              <div
+                className="absolute top-1/2 h-4 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded bg-slate-500 dark:bg-slate-300"
+                data-testid={`oc-overview-global-marker-${row.pillar}`}
+                style={{ left: getRailPositionPercent(row.globalAverage) }}
+              />
+              <div
+                className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow-sm"
+                data-testid={`oc-overview-dot-${row.pillar}`}
+                style={{
+                  backgroundColor: getOverviewBarColor(row.pillar, row.value),
+                  left: getRailPositionPercent(row.value),
+                }}
+              />
+            </div>
+            <div className="mt-1 flex justify-between text-[10px] text-gray-500 dark:text-slate-400">
+              <span>0</span>
+              <span>10</span>
+            </div>
+          </div>
+          <span className="w-[72px] text-right">{moreLabel}</span>
         </div>
       </div>
     );
@@ -587,18 +596,12 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                   Criminality (higher = worse)
                 </div>
                 {criminalityRows.map((row) => renderOverviewRow(row))}
-                <div className="mt-1 text-[10px] text-gray-500 dark:text-slate-400">
-                  Lower is better →
-                </div>
               </div>
               <div className="rounded border border-gray-200 p-2 dark:border-slate-700">
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-700 dark:text-slate-200">
                   Resilience (higher = better)
                 </div>
                 {resilienceRows.map((row) => renderOverviewRow(row))}
-                <div className="mt-1 text-[10px] text-gray-500 dark:text-slate-400">
-                  Higher is better →
-                </div>
               </div>
             </div>
           ) : (

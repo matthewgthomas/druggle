@@ -123,20 +123,40 @@ describe("CountryOcChart", () => {
     expect(
       screen.getByTestId("oc-overview-global-marker-resilience")
     ).toBeInTheDocument();
+
+    expect(
+      screen.getByTestId("oc-overview-annotation-dot-markets")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("oc-overview-annotation-dot-actors")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("oc-overview-annotation-dot-resilience")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByTestId("oc-overview-annotation-global-markets")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("oc-overview-annotation-global-actors")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("oc-overview-annotation-global-resilience")
+    ).toBeInTheDocument();
   });
 
-  it("shows signed delta badges with arrows in overview rows", () => {
+  it("shows narrative comparisons against global averages in overview rows", () => {
     render(<CountryOcChart countryCode="US" />);
 
-    expect(screen.getByTestId("oc-overview-delta-markets")).toHaveTextContent(
-      /^[↑↓→]\s[+-]\d+\.\d$/
-    );
-    expect(screen.getByTestId("oc-overview-delta-actors")).toHaveTextContent(
-      /^[↑↓→]\s[+-]\d+\.\d$/
-    );
-    expect(screen.getByTestId("oc-overview-delta-resilience")).toHaveTextContent(
-      /^[↑↓→]\s[+-]\d+\.\d$/
-    );
+    expect(
+      screen.getByTestId("oc-overview-narrative-markets")
+    ).toHaveTextContent(/^\s*\d+\.\d\s·\s.+global average of \d+\.\d\s*$/);
+    expect(
+      screen.getByTestId("oc-overview-narrative-actors")
+    ).toHaveTextContent(/^\s*\d+\.\d\s·\s.+global average of \d+\.\d\s*$/);
+    expect(
+      screen.getByTestId("oc-overview-narrative-resilience")
+    ).toHaveTextContent(/^\s*\d+\.\d\s·\s.+global average of \d+\.\d\s*$/);
   });
 
   it("shows resilience-specific legend labels and reversed colors", () => {
