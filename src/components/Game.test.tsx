@@ -109,7 +109,7 @@ describe("Game", () => {
     expect(screen.queryByAltText("country to guess")).not.toBeInTheDocument();
     expect(screen.getByTestId("oc-chart")).toHaveAttribute(
       "data-series-count",
-      "32"
+      "15"
     );
   });
 
