@@ -36,6 +36,10 @@ const SECTION_MIN_HEIGHT = 210;
 const SECTION_CHART_TOP_MARGIN = 16;
 const OVERVIEW_CHART_HEIGHT = 180;
 const OVERVIEW_BAR_RADIUS = 4;
+const OVERVIEW_PURPLE_LOW = "#f2f0f7";
+const OVERVIEW_PURPLE_HIGH = "#40004b";
+const OVERVIEW_GREEN_LOW = "#f7fcf5";
+const OVERVIEW_GREEN_HIGH = "#00441b";
 
 const MARKET_AND_ACTOR_BAND_COLORS: Record<InfluenceBand, string> = {
   little: "#008837",
@@ -119,6 +123,50 @@ function getInfluenceBand(value: number): InfluenceBand {
   }
 
   return "severe";
+}
+
+function clampScore(value: number): number {
+  return Math.max(0, Math.min(10, value));
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const normalizedHex = hex.startsWith("#") ? hex.slice(1) : hex;
+
+  return [
+    Number.parseInt(normalizedHex.slice(0, 2), 16),
+    Number.parseInt(normalizedHex.slice(2, 4), 16),
+    Number.parseInt(normalizedHex.slice(4, 6), 16),
+  ];
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (value: number) =>
+    Math.round(value).toString(16).padStart(2, "0");
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function interpolateHexColor(
+  lowHex: string,
+  highHex: string,
+  t: number
+): string {
+  const [lowR, lowG, lowB] = hexToRgb(lowHex);
+  const [highR, highG, highB] = hexToRgb(highHex);
+
+  return rgbToHex(
+    lowR + (highR - lowR) * t,
+    lowG + (highG - lowG) * t,
+    lowB + (highB - lowB) * t
+  );
+}
+
+function getOverviewBarColor(pillar: OcPillar, value: number): string {
+  const ratio = clampScore(value) / 10;
+
+  return pillar === "resilience"
+    ? interpolateHexColor(OVERVIEW_GREEN_LOW, OVERVIEW_GREEN_HIGH, ratio)
+    : interpolateHexColor(OVERVIEW_PURPLE_LOW, OVERVIEW_PURPLE_HIGH, ratio);
 }
 
 function formatScoreValue(value: unknown): string {
@@ -256,22 +304,25 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
     <div className="mb-2 text-xs">
       <div className="flex flex-wrap gap-2">
         <span
-          className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-2 py-1 text-rose-800"
+          className="inline-flex items-center gap-1 rounded border border-purple-200 bg-purple-50 px-2 py-1 text-purple-700"
           data-testid="oc-overview-direction-worse"
         >
-          <span className="h-2 w-2 rounded-full bg-rose-500" />
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: OVERVIEW_PURPLE_HIGH }}
+          />
           Higher is worse (criminal markets, criminal actors)
         </span>
         <span
           className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-800"
           data-testid="oc-overview-direction-better"
         >
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: OVERVIEW_GREEN_HIGH }}
+          />
           Higher is better (resilience)
         </span>
-      </div>
-      <div className="mt-1 text-[11px] text-gray-600 dark:text-slate-300">
-        Values are simple means of each pillar&apos;s indicators.
       </div>
     </div>
   );
@@ -307,7 +358,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
       >
         {overviewRows.map((row) => (
           <Cell
-            fill={getBandColorsByPillar(row.pillar)[row.influenceBand]}
+            fill={getOverviewBarColor(row.pillar, row.value)}
             key={`overview-bar-${row.pillar}`}
           />
         ))}

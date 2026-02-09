@@ -8,7 +8,9 @@ jest.mock("recharts", () => ({
     <div>{children}</div>
   ),
   CartesianGrid: () => null,
-  Cell: () => null,
+  Cell: ({ fill }: { fill?: string }) => (
+    <div data-fill={fill} data-testid="oc-overview-bar-cell" />
+  ),
   ComposedChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -99,6 +101,17 @@ describe("CountryOcChart", () => {
 
     expect(screen.getByText(/Higher is worse/)).toBeInTheDocument();
     expect(screen.getByText(/Higher is better/)).toBeInTheDocument();
+  });
+
+  it("uses sequential purple and green scales in overview bar fills", () => {
+    render(<CountryOcChart countryCode="US" />);
+
+    const overviewCells = screen.getAllByTestId("oc-overview-bar-cell");
+
+    expect(overviewCells).toHaveLength(3);
+    expect(overviewCells[0]).toHaveAttribute("data-fill", "#855d8e");
+    expect(overviewCells[1]).toHaveAttribute("data-fill", "#8e6a97");
+    expect(overviewCells[2]).toHaveAttribute("data-fill", "#4b7c5d");
   });
 
   it("shows resilience-specific legend labels and reversed colors", () => {
