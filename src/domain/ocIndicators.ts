@@ -77,3 +77,45 @@ export function getCountryOcPillarAverages(
     resilience: sums.resilience / counts.resilience,
   };
 }
+
+function computeGlobalOcPillarAverages(): Record<OcPillar, number> {
+  const sums: Record<OcPillar, number> = {
+    markets: 0,
+    actors: 0,
+    resilience: 0,
+  };
+  let countryCount = 0;
+
+  for (const code of Array.from(ocCountryCodes)) {
+    const averages = getCountryOcPillarAverages(code);
+
+    if (averages == null) {
+      continue;
+    }
+
+    sums.markets += averages.markets;
+    sums.actors += averages.actors;
+    sums.resilience += averages.resilience;
+    countryCount += 1;
+  }
+
+  if (countryCount === 0) {
+    return {
+      markets: 0,
+      actors: 0,
+      resilience: 0,
+    };
+  }
+
+  return {
+    markets: sums.markets / countryCount,
+    actors: sums.actors / countryCount,
+    resilience: sums.resilience / countryCount,
+  };
+}
+
+const globalOcPillarAverages = computeGlobalOcPillarAverages();
+
+export function getGlobalOcPillarAverages(): Record<OcPillar, number> {
+  return globalOcPillarAverages;
+}

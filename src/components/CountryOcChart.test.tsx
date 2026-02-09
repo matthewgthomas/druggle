@@ -99,19 +99,44 @@ describe("CountryOcChart", () => {
   it("shows semantic guidance in the overview legend", () => {
     render(<CountryOcChart countryCode="US" />);
 
-    expect(screen.getByText(/Higher is worse/)).toBeInTheDocument();
-    expect(screen.getByText(/Higher is better/)).toBeInTheDocument();
+    expect(screen.getByText("Criminality (higher = worse)")).toBeInTheDocument();
+    expect(screen.getByText("Resilience (higher = better)")).toBeInTheDocument();
   });
 
-  it("uses sequential purple and green scales in overview bar fills", () => {
+  it("renders overview rows with score dots and global-average markers", () => {
     render(<CountryOcChart countryCode="US" />);
 
-    const overviewCells = screen.getAllByTestId("oc-overview-bar-cell");
+    expect(screen.getByTestId("oc-overview-row-markets")).toBeInTheDocument();
+    expect(screen.getByTestId("oc-overview-row-actors")).toBeInTheDocument();
+    expect(screen.getByTestId("oc-overview-row-resilience")).toBeInTheDocument();
 
-    expect(overviewCells).toHaveLength(3);
-    expect(overviewCells[0]).toHaveAttribute("data-fill", "#855d8e");
-    expect(overviewCells[1]).toHaveAttribute("data-fill", "#8e6a97");
-    expect(overviewCells[2]).toHaveAttribute("data-fill", "#4b7c5d");
+    expect(screen.getByTestId("oc-overview-dot-markets")).toBeInTheDocument();
+    expect(screen.getByTestId("oc-overview-dot-actors")).toBeInTheDocument();
+    expect(screen.getByTestId("oc-overview-dot-resilience")).toBeInTheDocument();
+
+    expect(
+      screen.getByTestId("oc-overview-global-marker-markets")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("oc-overview-global-marker-actors")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("oc-overview-global-marker-resilience")
+    ).toBeInTheDocument();
+  });
+
+  it("shows signed delta badges with arrows in overview rows", () => {
+    render(<CountryOcChart countryCode="US" />);
+
+    expect(screen.getByTestId("oc-overview-delta-markets")).toHaveTextContent(
+      /^[↑↓→]\s[+-]\d+\.\d$/
+    );
+    expect(screen.getByTestId("oc-overview-delta-actors")).toHaveTextContent(
+      /^[↑↓→]\s[+-]\d+\.\d$/
+    );
+    expect(screen.getByTestId("oc-overview-delta-resilience")).toHaveTextContent(
+      /^[↑↓→]\s[+-]\d+\.\d$/
+    );
   });
 
   it("shows resilience-specific legend labels and reversed colors", () => {

@@ -1,11 +1,6 @@
 import React from "react";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
   ComposedChart,
-  LabelList,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
@@ -15,6 +10,7 @@ import {
 } from "recharts";
 import {
   getCountryOcPillarAverages,
+  getGlobalOcPillarAverages,
   getCountryOcSeries,
   OcPillar,
 } from "../domain/ocIndicators";
@@ -25,6 +21,7 @@ interface CountryOcChartProps {
 
 type InfluenceBand = "little" | "moderate" | "significant" | "severe";
 type ChartView = "overview" | OcPillar;
+type OverviewDirection = "higher-worse" | "higher-better";
 
 const MIDPOINT = 5.5;
 const STEM_WIDTH = 4;
@@ -34,8 +31,6 @@ const Y_AXIS_MAX_CHARS_PER_LINE = 20;
 const SECTION_ROW_HEIGHT = 27;
 const SECTION_MIN_HEIGHT = 210;
 const SECTION_CHART_TOP_MARGIN = 16;
-const OVERVIEW_CHART_HEIGHT = 180;
-const OVERVIEW_BAR_RADIUS = 4;
 const OVERVIEW_PURPLE_LOW = "#f2f0f7";
 const OVERVIEW_PURPLE_HIGH = "#40004b";
 const OVERVIEW_GREEN_LOW = "#f7fcf5";
@@ -91,6 +86,15 @@ interface YAxisTickProps {
   payload?: {
     value?: number | string;
   };
+}
+
+interface OverviewRow {
+  direction: OverviewDirection;
+  delta: number;
+  globalAverage: number;
+  label: string;
+  pillar: OcPillar;
+  value: number;
 }
 
 function getBandColorsByPillar(
@@ -167,6 +171,36 @@ function getOverviewBarColor(pillar: OcPillar, value: number): string {
   return pillar === "resilience"
     ? interpolateHexColor(OVERVIEW_GREEN_LOW, OVERVIEW_GREEN_HIGH, ratio)
     : interpolateHexColor(OVERVIEW_PURPLE_LOW, OVERVIEW_PURPLE_HIGH, ratio);
+}
+
+function getRailPositionPercent(value: number): string {
+  return `${(clampScore(value) / 10) * 100}%`;
+}
+
+function normalizeDelta(delta: number): number {
+  const rounded = Math.round(delta * 10) / 10;
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
+
+function getDeltaArrow(delta: number): string {
+  const normalizedDelta = normalizeDelta(delta);
+
+  if (normalizedDelta > 0) {
+    return "↑";
+  }
+
+  if (normalizedDelta < 0) {
+    return "↓";
+  }
+
+  return "→";
+}
+
+function formatSignedDelta(delta: number): string {
+  const normalizedDelta = normalizeDelta(delta);
+  const sign = normalizedDelta >= 0 ? "+" : "";
+
+  return `${sign}${normalizedDelta.toFixed(1)}`;
 }
 
 function formatScoreValue(value: unknown): string {
@@ -276,19 +310,26 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
     visibleView === "overview"
       ? null
       : sections.find((section) => section.pillar === visibleView);
-  const overviewRows = SECTION_ORDER.map((pillar) => {
+  const globalAverages = getGlobalOcPillarAverages();
+  const overviewRows: OverviewRow[] = SECTION_ORDER.map((pillar) => {
     const value = averages[pillar];
-    const influenceBand = getInfluenceBand(value);
+    const globalAverage = globalAverages[pillar];
 
     return {
-      direction:
-        pillar === "resilience" ? "Higher is better" : "Higher is worse",
-      influenceBand,
+      delta: value - globalAverage,
+      direction: pillar === "resilience" ? "higher-better" : "higher-worse",
+      globalAverage,
       label: SECTION_LABELS[pillar],
       pillar,
       value,
     };
   });
+  const criminalityRows = overviewRows.filter(
+    (row) => row.pillar !== "resilience"
+  );
+  const resilienceRows = overviewRows.filter(
+    (row) => row.pillar === "resilience"
+  );
 
   if (visibleView !== "overview" && detailSection == null) {
     return (
@@ -298,85 +339,78 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
     );
   }
 
-  let sectionChartHeight = OVERVIEW_CHART_HEIGHT;
-  let chartSeriesCount = overviewRows.length;
-  let legendContent: React.ReactNode = (
-    <div className="mb-2 text-xs">
-      <div className="flex flex-wrap gap-2">
-        <span
-          className="inline-flex items-center gap-1 rounded border border-purple-200 bg-purple-50 px-2 py-1 text-purple-700"
-          data-testid="oc-overview-direction-worse"
-        >
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: OVERVIEW_PURPLE_HIGH }}
-          />
-          Higher is worse (criminal markets, criminal actors)
-        </span>
-        <span
-          className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-800"
-          data-testid="oc-overview-direction-better"
-        >
-          <span
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: OVERVIEW_GREEN_HIGH }}
-          />
-          Higher is better (resilience)
-        </span>
-      </div>
-    </div>
-  );
-  let chartContent: React.ReactElement = (
-    <BarChart
-      data={overviewRows}
-      layout="vertical"
-      margin={{
-        top: SECTION_CHART_TOP_MARGIN,
-        right: 16,
-        left: 24,
-        bottom: 8,
-      }}
-    >
-      <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-      <XAxis
-        type="number"
-        domain={[0, 10]}
-        tick={{ fill: "#5f5f5f", fontSize: 10 }}
-        tickCount={6}
-      />
-      <YAxis
-        type="category"
-        dataKey="label"
-        width={Y_AXIS_WIDTH}
-        tick={renderYAxisTick}
-        tickMargin={6}
-        interval={0}
-      />
-      <Bar
-        dataKey="value"
-        radius={[0, OVERVIEW_BAR_RADIUS, OVERVIEW_BAR_RADIUS, 0]}
+  const renderOverviewRow = (row: OverviewRow) => {
+    const normalizedDelta = normalizeDelta(row.delta);
+    const isAboveAverage = normalizedDelta > 0;
+    const isBelowAverage = normalizedDelta < 0;
+    let deltaBadgeClass = "border-gray-200 bg-gray-50 text-gray-700";
+
+    if (row.direction === "higher-worse") {
+      if (isAboveAverage) {
+        deltaBadgeClass = "border-rose-200 bg-rose-50 text-rose-800";
+      } else if (isBelowAverage) {
+        deltaBadgeClass = "border-emerald-200 bg-emerald-50 text-emerald-800";
+      }
+    } else if (isAboveAverage) {
+      deltaBadgeClass = "border-emerald-200 bg-emerald-50 text-emerald-800";
+    } else if (isBelowAverage) {
+      deltaBadgeClass = "border-rose-200 bg-rose-50 text-rose-800";
+    }
+
+    return (
+      <div
+        className="mb-3 last:mb-0"
+        data-testid={`oc-overview-row-${row.pillar}`}
+        key={row.pillar}
       >
-        {overviewRows.map((row) => (
-          <Cell
-            fill={getOverviewBarColor(row.pillar, row.value)}
-            key={`overview-bar-${row.pillar}`}
+        <div className="mb-1 flex items-center justify-between gap-2 text-[11px]">
+          <span className="font-semibold text-gray-700 dark:text-slate-200">
+            {row.label}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="font-semibold text-gray-700 dark:text-slate-100">
+              {row.value.toFixed(1)}
+            </span>
+            <span
+              className={`rounded border px-1 py-[1px] text-[10px] font-semibold ${deltaBadgeClass} dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100`}
+              data-testid={`oc-overview-delta-${row.pillar}`}
+            >
+              {getDeltaArrow(row.delta)} {formatSignedDelta(row.delta)}
+            </span>
+          </span>
+        </div>
+        <div className="relative h-5">
+          <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-gray-300 dark:bg-slate-600" />
+          <div
+            className="absolute top-1/2 h-4 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded bg-slate-500 dark:bg-slate-300"
+            data-testid={`oc-overview-global-marker-${row.pillar}`}
+            style={{ left: getRailPositionPercent(row.globalAverage) }}
           />
-        ))}
-        <LabelList
-          dataKey="value"
-          fill="#374151"
-          fontSize={10}
-          fontWeight={600}
-          formatter={(value: unknown) => formatScoreValue(value)}
-          position="right"
-        />
-      </Bar>
-      <Tooltip
-        formatter={(value: unknown) => formatScoreValue(value)}
-        labelFormatter={(value: unknown) => `${value} average`}
-      />
-    </BarChart>
-  );
+          <div
+            className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow-sm"
+            data-testid={`oc-overview-dot-${row.pillar}`}
+            style={{
+              backgroundColor: getOverviewBarColor(row.pillar, row.value),
+              left: getRailPositionPercent(row.value),
+            }}
+          />
+        </div>
+        <div className="mt-1 flex justify-between text-[10px] text-gray-500 dark:text-slate-400">
+          <span>0</span>
+          <span>5</span>
+          <span>10</span>
+        </div>
+        <div className="mt-1 text-[10px] text-gray-500 dark:text-slate-400">
+          Global avg: {row.globalAverage.toFixed(1)}
+        </div>
+      </div>
+    );
+  };
+
+  let sectionChartHeight = SECTION_MIN_HEIGHT;
+  let chartSeriesCount = overviewRows.length;
+  let detailLegendContent: React.ReactNode = <></>;
+  let detailChartContent: React.ReactElement = <></>;
 
   if (visibleView !== "overview") {
     const resolvedDetailSection = detailSection;
@@ -402,7 +436,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
     );
     chartSeriesCount = resolvedDetailSection.rows.length;
 
-    legendContent = (
+    detailLegendContent = (
       <div className="flex flex-wrap gap-3 text-xs mb-2">
         {BAND_ORDER.map((band) => (
           <span
@@ -422,7 +456,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
       </div>
     );
 
-    chartContent = (
+    detailChartContent = (
       <ComposedChart
         data={resolvedDetailSection.rows}
         layout="vertical"
@@ -539,20 +573,41 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
           );
         })}
       </div>
-      {legendContent}
+      {visibleView === "overview" ? null : detailLegendContent}
       <div className="max-h-72 overflow-y-auto" data-testid="oc-chart-scroll">
         <div
           data-chart-view={visibleView}
           data-series-count={chartSeriesCount}
           data-testid="oc-chart"
         >
-          <div>
+          {visibleView === "overview" ? (
+            <div className="space-y-2">
+              <div className="rounded border border-gray-200 p-2 dark:border-slate-700">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-700 dark:text-slate-200">
+                  Criminality (higher = worse)
+                </div>
+                {criminalityRows.map((row) => renderOverviewRow(row))}
+                <div className="mt-1 text-[10px] text-gray-500 dark:text-slate-400">
+                  Lower is better →
+                </div>
+              </div>
+              <div className="rounded border border-gray-200 p-2 dark:border-slate-700">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-700 dark:text-slate-200">
+                  Resilience (higher = better)
+                </div>
+                {resilienceRows.map((row) => renderOverviewRow(row))}
+                <div className="mt-1 text-[10px] text-gray-500 dark:text-slate-400">
+                  Higher is better →
+                </div>
+              </div>
+            </div>
+          ) : (
             <div style={{ height: sectionChartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
-                {chartContent}
+                {detailChartContent}
               </ResponsiveContainer>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

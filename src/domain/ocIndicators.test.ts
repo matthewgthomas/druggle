@@ -1,5 +1,6 @@
 import {
   getCountryOcPillarAverages,
+  getGlobalOcPillarAverages,
   getCountryOcSeries,
   indicatorMeta,
   ocCountryCodes,
@@ -38,5 +39,13 @@ describe("ocIndicators", () => {
 
   it("returns null averages for unknown codes", () => {
     expect(getCountryOcPillarAverages("XX")).toBeNull();
+  });
+
+  it("returns global pillar averages across all countries", () => {
+    const globalAverages = getGlobalOcPillarAverages();
+
+    expect(globalAverages.markets).toBeCloseTo(4.9050, 4);
+    expect(globalAverages.actors).toBeCloseTo(5.2461, 4);
+    expect(globalAverages.resilience).toBeCloseTo(4.7809, 4);
   });
 });
