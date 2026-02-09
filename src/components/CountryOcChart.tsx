@@ -273,9 +273,6 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
           data-testid="oc-chart"
         >
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-1">
-              {activeSection.title}
-            </div>
             <div style={{ height: sectionChartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
