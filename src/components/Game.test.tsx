@@ -6,9 +6,16 @@ import { SettingsData } from "../hooks/useSettings";
 const mockUseUtcDayString = jest.fn();
 
 jest.mock("recharts", () => ({
+  Bar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  CartesianGrid: () => null,
+  Cell: () => null,
   ComposedChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
+  LabelList: () => null,
   ReferenceDot: () => null,
   ReferenceLine: () => null,
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
@@ -108,8 +115,12 @@ describe("Game", () => {
 
     expect(screen.queryByAltText("country to guess")).not.toBeInTheDocument();
     expect(screen.getByTestId("oc-chart")).toHaveAttribute(
+      "data-chart-view",
+      "overview"
+    );
+    expect(screen.getByTestId("oc-chart")).toHaveAttribute(
       "data-series-count",
-      "32"
+      "3"
     );
   });
 

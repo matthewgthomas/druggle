@@ -1,4 +1,6 @@
 import {
+  getCountryOcPillarAverages,
+  getGlobalOcPillarAverages,
   getCountryOcSeries,
   indicatorMeta,
   ocCountryCodes,
@@ -24,5 +26,26 @@ describe("ocIndicators", () => {
 
   it("returns an empty series for unknown codes", () => {
     expect(getCountryOcSeries("XX")).toEqual([]);
+  });
+
+  it("returns per-pillar average scores for known countries", () => {
+    const averages = getCountryOcPillarAverages("US");
+
+    expect(averages).not.toBeNull();
+    expect(averages?.markets).toBeCloseTo(6.1333, 4);
+    expect(averages?.actors).toBeCloseTo(5.6, 4);
+    expect(averages?.resilience).toBeCloseTo(6.9583, 4);
+  });
+
+  it("returns null averages for unknown codes", () => {
+    expect(getCountryOcPillarAverages("XX")).toBeNull();
+  });
+
+  it("returns global pillar averages across all countries", () => {
+    const globalAverages = getGlobalOcPillarAverages();
+
+    expect(globalAverages.markets).toBeCloseTo(4.9050, 4);
+    expect(globalAverages.actors).toBeCloseTo(5.2461, 4);
+    expect(globalAverages.resilience).toBeCloseTo(4.7809, 4);
   });
 });
