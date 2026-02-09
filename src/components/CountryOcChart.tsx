@@ -33,10 +33,10 @@ const MARKET_AND_ACTOR_BAND_COLORS: Record<InfluenceBand, string> = {
 };
 
 const MARKET_AND_ACTOR_BAND_LABELS: Record<InfluenceBand, string> = {
-  little: "Non-existent or little influence",
-  moderate: "Moderate influence",
-  significant: "Significant influence",
-  severe: "Severe influence",
+  little: "Non-existent or little influence (1-3)",
+  moderate: "Moderate influence (4-5)",
+  significant: "Significant influence (6-7)",
+  severe: "Severe influence (8-10)",
 };
 
 const RESILIENCE_BAND_COLORS: Record<InfluenceBand, string> = {
