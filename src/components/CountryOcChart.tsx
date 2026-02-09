@@ -381,14 +381,14 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
           · {narrative}
         </div>
         <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-slate-400">
-          <span className="w-[72px] text-left">{lessLabel}</span>
+          <span className="w-[70px] text-left">{lessLabel}</span>
           <div className="min-w-0 flex-1">
             <div className="relative h-5">
               <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-gray-300 dark:bg-slate-600" />
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-500 dark:text-slate-400">
+              <div className="absolute left-[-12px] top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-500 dark:text-slate-400">
                 0
               </div>
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-500 dark:text-slate-400">
+              <div className="absolute right-[-14px] top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-500 dark:text-slate-400">
                 10
               </div>
               <div
@@ -404,10 +404,6 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
                   left: getRailPositionPercent(row.value),
                 }}
               />
-            </div>
-            <div className="mt-1 flex justify-between text-[10px] text-gray-500 dark:text-slate-400">
-              <span>0</span>
-              <span>10</span>
             </div>
           </div>
           <span className="w-[72px] text-right">{moreLabel}</span>
