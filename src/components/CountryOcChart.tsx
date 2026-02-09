@@ -223,7 +223,12 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
       </div>
       <div className="text-xs mb-2">
         Click the three buttons below to explore the{" "}
-        <a href="https://ocindex.net" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://ocindex.net"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
           influence of organised crime
         </a>{" "}
         in a randomly chosen country then guess where it is.
