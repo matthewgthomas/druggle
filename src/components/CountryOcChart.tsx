@@ -531,10 +531,10 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
   return (
     <div className="my-1 border border-gray-200 rounded p-2">
       <div className="text-xs font-semibold uppercase mb-2">
-        Organised Crime Indicators
+        Organised Crime
       </div>
       <div className="text-xs mb-2">
-        Use the tabs below to explore an overview and detailed{" "}
+        Use the buttons below to explore the{" "}
         <a
           href="https://ocindex.net"
           target="_blank"
