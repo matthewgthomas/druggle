@@ -177,11 +177,6 @@ function getRailPositionPercent(value: number): string {
   return `${(clampScore(value) / 10) * 100}%`;
 }
 
-function getClampedRailAnnotationPercent(value: number): string {
-  const railPercent = (clampScore(value) / 10) * 100;
-  return `${Math.max(10, Math.min(90, railPercent))}%`;
-}
-
 function normalizeDelta(delta: number): number {
   const rounded = Math.round(delta * 10) / 10;
   return Object.is(rounded, -0) ? 0 : rounded;
