@@ -222,12 +222,11 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
         Organised Crime Indicators
       </div>
       <div className="text-xs mb-2">
-        This chart shows the{" "}
+        Click the three buttons below to explore the{" "}
         <a href="https://ocindex.net" target="_blank" rel="noopener noreferrer">
           influence of organised crime
         </a>{" "}
-        in a randomly chosen country. Scroll/swipe down to explore the different
-        crime indicators then make a guess.
+        in a randomly chosen country then guess where it is.
       </div>
       <div className="flex flex-wrap gap-1 mb-2">
         {sections.map((section) => {
