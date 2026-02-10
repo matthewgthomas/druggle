@@ -574,7 +574,7 @@ export function CountryOcChart({ countryCode }: CountryOcChartProps) {
         })}
       </div>
       {visibleView === "overview" ? null : detailLegendContent}
-      <div className="max-h-72 overflow-y-auto" data-testid="oc-chart-scroll">
+      <div className="max-h-80 overflow-y-auto" data-testid="oc-chart-scroll">
         <div
           data-chart-view={visibleView}
           data-series-count={chartSeriesCount}
